@@ -8,10 +8,10 @@ class editableosufile(osufile):
         t = self
         for i in range(len(t.TimingPoints)):
             t.TimingPoints[i].offset += offset
-            t.TimingPoints[i].data[0] = str(t.TimingPoints[i].offset)
         for k in range(len(t.HitObjects)):
             t.HitObjects[k].offset += offset
-            t.HitObjects[k].data[2] = str(t.HitObjects[k].offset)
+            if t.HitObjects[k].release > 0:
+                t.HitObjects[k].release += offset
         return t
 
     def __add__(self, elem):
@@ -31,3 +31,45 @@ class editableosufile(osufile):
             return t
         else:
             raise TypeError("Invalid Operation between editableosufile and {}".format(type(elem)))
+    
+    def __repr__(self):
+        initializestring = "osu file format v14\n\n"
+        initializestring += "[General]\n"
+        for key, value in zip(self.General.keys(), self.General.values()):
+            initializestring += "{}:{}\n".format(key, value)
+        initializestring += "\n"
+        initializestring += "[Editor]\n"
+        for key, value in zip(self.editor.keys(), self.editor.values()):
+            initializestring += "{}:".format(key)
+            if key == "Bookmarks":
+                initializestring += str(self.editor[key])[1:len(str(self.editor[key])) - 1]
+                initializestring += "\n"
+                continue
+            initializestring += "{}\n".format(value)
+        initializestring += "\n"
+        initializestring += "[Metadata]\n"
+        for key, value in zip(self.metadata.keys(), self.metadata.values()):
+            initializestring += "{}:".format(key)
+            if key == "Tags":
+                initializestring += " ".join(self.metadata[key])
+                initializestring += "\n"
+                continue
+            initializestring += "{}\n".format(value)
+        initializestring += "\n[Difficulty]\n"
+        for key, value in zip(self.difficulty.keys(), self.difficulty.values()):
+            initializestring += "{}:{}\n".format(key, value)
+        initializestring += '\n[Events]\n//Background and Video events\n0,0,"blank.jpg",0,0\n//Break Periods\n//Storyboard Layer 0 (Background)\n//Storyboard Layer 1 (Fail)\n//Storyboard Layer 2 (Pass)\n//Storyboard Layer 3 (Foreground)\n//Storyboard Sound Samples\n'
+        initializestring += "\n[TimingPoints]\n"
+        for tp in self.TimingPoints:
+            initializestring += tp.encode() + "\n"
+        initializestring += "\n"
+        initializestring += "[HitObjects]\n"
+        for hit in self.HitObjects:
+            initializestring += hit.encode() + "\n"
+        initializestring += "\n"
+        return initializestring
+
+def parse_beatmap(filedir):
+    with open(filedir, "r") as f:
+        data = f.read()
+        return editableosufile(data)
