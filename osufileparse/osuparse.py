@@ -46,7 +46,7 @@ class osufile:
         self.TimingPoints = list()
         self.HitObjects = list()
         self.initialize_data()
-    
+        
     def initialize_data(self):
         self.parseGeneral()
         self.parseEditor()

@@ -3,9 +3,13 @@ from osuparse import osufile
 class editableosufile(osufile):
     def __init__(self, data):
         super().__init__(data)
+        self.start = self.HitObjects[0].offset
+        self.end = self.HitObjects[-1].offset
     
     def scroll(self, offset):
         t = self
+        t.start += offset
+        t.end += offset
         for i in range(len(t.TimingPoints)):
             t.TimingPoints[i].offset += offset
         for k in range(len(t.HitObjects)):
@@ -24,8 +28,8 @@ class editableosufile(osufile):
             return t
         if isinstance(elem, editableosufile):
             t = self
-            start = t.HitObjects[-1].offset
-            elem = elem.scroll(start)
+            t += -t.start
+            t += elem.end
             t.TimingPoints += elem.TimingPoints
             t.HitObjects += elem.HitObjects
             return t
